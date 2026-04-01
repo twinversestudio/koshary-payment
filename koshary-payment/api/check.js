@@ -1,0 +1,32 @@
+const { MongoClient } = require('mongodb');
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri);
+
+module.exports = async (req, res) => {
+    const { playerId } = req.query;
+
+    try {
+        await client.connect();
+        const db = client.db('kosharygame');
+        const orders = db.collection('orders');
+
+        // ???? ?? ??????? ???????? ????? ??
+        const paidOrders = await orders.find({
+            playerId: playerId,
+            status: 'paid'
+        }).toArray();
+
+        const totalCoins = paidOrders.reduce((sum, order) => sum + order.amount, 0);
+
+        res.json({
+            success: true,
+            totalCoins: totalCoins,
+            ordersCount: paidOrders.length
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        await client.close();
+    }
+};
