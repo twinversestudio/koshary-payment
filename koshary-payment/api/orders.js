@@ -5,7 +5,7 @@ const client = new MongoClient(uri);
 module.exports = async (req, res) => {
     const { password } = req.query;
 
-    if (password !== 'koshary123') {
+    if (password !== '0E6e40P6hOz4Ei4G') {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
