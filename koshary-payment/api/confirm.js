@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     const { orderId, adminPassword } = req.body;
 
     // ???? ?? ???????? (???? ??????? ???!)
-    if (adminPassword !== 'koshary123') {
+    if (adminPassword !== '0E6e40P6hOz4Ei4G') {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
