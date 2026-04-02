@@ -26,13 +26,34 @@ async function sendTelegram(message) {
     }
 }
 
-function verifySignature(rawBody, signature) {
-    if (!PAYMOB_HMAC) return true;
-    
-    const hmac = crypto.createHmac('sha512', PAYMOB_HMAC);
-    const expectedSignature = hmac.update(rawBody).digest('hex');
-    
-    return signature === expectedSignature;
+function verifyHmac(data, hmacSecret) {
+    // Paymob HMAC calculation
+    const fields = [
+        data.amount_cents,
+        data.created_at,
+        data.currency,
+        data.error_occured,
+        data.has_parent_transaction,
+        data.id,
+        data.integration_id,
+        data.is_3d_secure,
+        data.is_auth,
+        data.is_capture,
+        data.is_refunded,
+        data.is_standalone_payment,
+        data.is_voided,
+        data.order,
+        data.owner,
+        data.pending,
+        data.source_data.pan,
+        data.source_data.sub_type,
+        data.source_data.type,
+        data.success
+    ].join('');
+
+    const hmac = crypto.createHmac('sha512', hmacSecret);
+    hmac.update(fields);
+    return hmac.digest('hex');
 }
 
 module.exports = async (req, res) => {
@@ -40,35 +61,49 @@ module.exports = async (req, res) => {
         return res.status(405).send('Method not allowed');
     }
 
-    const signature = req.headers['paymob-signature'];
-    const rawBody = JSON.stringify(req.body);
-    
-    if (!verifySignature(rawBody, signature)) {
-        console.log('Invalid webhook signature');
-        return res.status(401).send('Unauthorized');
-    }
+    try {
+        const data = req.body;
+        console.log('Webhook received:', JSON.stringify(data));
 
-    const data = req.body;
+        // Verify HMAC if secret exists
+        if (PAYMOB_HMAC && data.hmac) {
+            const calculatedHmac = verifyHmac(data, PAYMOB_HMAC);
+            if (calculatedHmac !== data.hmac) {
+                console.log('HMAC mismatch');
+                return res.status(401).send('Unauthorized');
+            }
+        }
 
-    if (data.type === 'TRANSACTION_DONE') {
-        const merchantOrderId = data.merchant_order_id;
-        const amountCents = data.amount_cents;
+        // Check if successful payment
+        if (data.success === true || data.success === 'true') {
+            const merchantOrderId = data.merchant_order_id || data.order?.merchant_order_id;
+            const amountCents = data.amount_cents;
 
-        if (amountCents > 0) {
-            try {
-                await client.connect();
-                const db = client.db('kosharygame');
-                const orders = db.collection('orders');
+            if (!merchantOrderId || amountCents <= 0) {
+                console.log('Invalid order data');
+                return res.sendStatus(200);
+            }
 
-                const order = await orders.findOne({ orderId: merchantOrderId });
+            await client.connect();
+            const db = client.db('kosharygame');
+            const orders = db.collection('orders');
 
-                if (order && order.status !== 'paid') {
-                    await orders.updateOne(
-                        { orderId: merchantOrderId },
-                        { $set: { status: 'paid', paidAt: new Date(), paymobId: data.id } }
-                    );
+            const order = await orders.findOne({ orderId: merchantOrderId });
 
-                    const message = `
+            if (order && order.status !== 'paid') {
+                await orders.updateOne(
+                    { orderId: merchantOrderId },
+                    { 
+                        $set: { 
+                            status: 'paid', 
+                            paidAt: new Date(), 
+                            paymobId: data.id?.toString(),
+                            paymobData: data
+                        } 
+                    }
+                );
+
+                const message = `
 ✅ <b>تم تأكيد الدفع تلقائياً!</b>
 
 📋 رقم الطلب: <code>${merchantOrderId}</code>
@@ -78,18 +113,18 @@ module.exports = async (req, res) => {
 🆔 Paymob ID: <code>${data.id}</code>
 
 🎮 اللاعب هياخد العملات لما يفتح اللعبة.
-                    `;
+                `;
 
-                    await sendTelegram(message);
-                }
-
-            } catch (error) {
-                console.error('Webhook error:', error);
-            } finally {
-                await client.close();
+                await sendTelegram(message);
+                console.log('Payment confirmed:', merchantOrderId);
             }
         }
-    }
 
-    res.sendStatus(200);
+        res.sendStatus(200);
+    } catch (error) {
+        console.error('Webhook error:', error);
+        res.sendStatus(500);
+    } finally {
+        await client.close();
+    }
 };
