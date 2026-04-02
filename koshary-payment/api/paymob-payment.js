@@ -1,13 +1,11 @@
-const axios = require('axios');
 const { MongoClient } = require('mongodb');
+const fetch = require('node-fetch');
 
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
 const PAYMOB_API_KEY = process.env.PAYMOB_API_KEY;
-const PUBLIC_KEY = process.env.PAYMOB_PUBLIC_KEY;
-
-const fetch = require('node-fetch');
+const INTEGRATION_ID = process.env.PAYMOB_INTEGRATION_ID;
 
 const BOT_TOKEN = '8625080293:AAGVKgZyQcRrcBVPixLrJvjzOCMJf-m3L9Q';
 const CHAT_ID = '8119274475';
@@ -33,16 +31,16 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { playerId, amount, price, method } = req.body;
+    const { playerId, amount, price } = req.body;
 
     if (!playerId || !amount || !price) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const orderId = 'ORD-' + Date.now();
-    const priceInCents = price * 100;
 
     try {
+        // 1. Save to DB first
         await client.connect();
         const db = client.db('kosharygame');
         const orders = db.collection('orders');
@@ -56,47 +54,72 @@ module.exports = async (req, res) => {
             createdAt: new Date()
         });
 
-        const authResponse = await axios.post('https://accept.paymob.com/v1/auth/token', {
-            api_key: PAYMOB_API_KEY
+        // 2. Auth with Paymob
+        const authRes = await fetch('https://accept.paymob.com/api/auth/tokens', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ api_key: PAYMOB_API_KEY })
         });
+        
+        const authData = await authRes.json();
+        if (!authData.token) {
+            throw new Error('Paymob auth failed: ' + JSON.stringify(authData));
+        }
 
-        const authToken = authResponse.data.token;
-
-        const orderResponse = await axios.post('https://accept.paymob.com/v1/ecommerce/orders', {
-            auth_token: authToken,
-            delivery_needed: false,
-            amount_cents: priceInCents,
-            currency: 'EGP',
-            merchant_order_id: orderId
+        // 3. Create Order
+        const orderRes = await fetch('https://accept.paymob.com/api/ecommerce/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                auth_token: authData.token,
+                delivery_needed: false,
+                amount_cents: price * 100,
+                currency: 'EGP',
+                merchant_order_id: orderId,
+                items: []
+            })
         });
+        
+        const orderData = await orderRes.json();
+        if (!orderData.id) {
+            throw new Error('Paymob order failed: ' + JSON.stringify(orderData));
+        }
 
-        const paymobOrderId = orderResponse.data.id;
-
-        const paymentKeyResponse = await axios.post('https://accept.paymob.com/v1/acceptance/post_pay', {
-            auth_token: authToken,
-            amount_cents: priceInCents,
-            expiration: 3600,
-            order_id: paymobOrderId,
-            billing_data: {
-                apartment: 'NA',
-                email: 'player@unity.com',
-                floor: 'NA',
-                first_name: playerId,
-                street: 'NA',
-                building: 'NA',
-                phone_number: 'NA',
-                shipping_method: 'NA',
-                postal_code: 'NA',
-                city: 'NA',
-                country: 'EG',
-                last_name: 'NA',
-                state: 'NA'
-            },
-            currency: 'EGP'
+        // 4. Payment Key
+        const paymentRes = await fetch('https://accept.paymob.com/api/acceptance/payment_keys', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                auth_token: authData.token,
+                amount_cents: price * 100,
+                expiration: 3600,
+                order_id: orderData.id,
+                billing_data: {
+                    first_name: 'Player',
+                    last_name: playerId.substring(0, 10),
+                    email: 'player@kosharygame.com',
+                    phone_number: '01000000000',
+                    apartment: 'NA',
+                    floor: 'NA',
+                    street: 'NA',
+                    building: 'NA',
+                    shipping_method: 'NA',
+                    postal_code: 'NA',
+                    city: 'Cairo',
+                    country: 'EG',
+                    state: 'Cairo'
+                },
+                currency: 'EGP',
+                integration_id: parseInt(INTEGRATION_ID)
+            })
         });
+        
+        const paymentData = await paymentRes.json();
+        if (!paymentData.token) {
+            throw new Error('Paymob payment key failed: ' + JSON.stringify(paymentData));
+        }
 
-        const paymentToken = paymentKeyResponse.data.token;
-
+        // 5. Telegram notification
         const message = `
 🎮 <b>طلب جديد - كشري سيميوليتور!</b>
 
@@ -107,19 +130,18 @@ module.exports = async (req, res) => {
 
 ⏳ <b>في انتظار الدفع...</b>
         `;
-
         await sendTelegram(message);
 
+        // 6. Return token
         res.json({
             success: true,
-            paymentToken: paymentToken,
-            orderId: orderId,
-            publicKey: PUBLIC_KEY
+            paymentToken: paymentData.token,
+            orderId: orderId
         });
 
     } catch (error) {
-        console.error('Paymob error:', error.response?.data || error.message);
-        res.status(500).json({ error: 'Payment error: ' + (error.response?.data?.message || error.message) });
+        console.error('Paymob error:', error);
+        res.status(500).json({ error: 'Payment error: ' + error.message });
     } finally {
         await client.close();
     }
