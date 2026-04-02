@@ -15,8 +15,8 @@ module.exports = async (req, res) => {
         const orders = db.collection('orders');
 
         const paidOrders = await orders.find({
-            playerId: playerId,
-            status: 'paid'
+        playerId: String(playerId)
+        status: 'paid'
         }).toArray();
 
         const totalCoins = paidOrders.reduce((sum, order) => sum + order.amount, 0);
