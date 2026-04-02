@@ -137,6 +137,7 @@ module.exports = async (req, res) => {
             success: true,
             paymentToken: paymentData.token,
             orderId: orderId
+            integrationId: parseInt(INTEGRATION_ID)
         });
 
     } catch (error) {
