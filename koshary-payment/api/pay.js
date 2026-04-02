@@ -1,5 +1,3 @@
-const { MongoClient } = require('mongodb');
-
 module.exports = async (req, res) => {
   const playerId = req.query.player || 'unknown';
   
