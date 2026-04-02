@@ -1,33 +1,12 @@
 {
   "version": 2,
   "routes": [
-    {
-      "src": "/pay",
-      "dest": "/api/pay.js"
-    },
-    {
-      "src": "/dashboard",
-      "dest": "/api/dashboard.js"
-    },
-    {
-      "src": "/api/paymob-payment",
-      "dest": "/api/paymob-payment.js"
-    },
-    {
-      "src": "/api/paymob-webhook",
-      "dest": "/api/paymob-webhook.js"
-    },
-    {
-      "src": "/api/paymob-response",
-      "dest": "/api/paymob-response.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/pay.js"
-    }
+    { "src": "/pay", "dest": "/api/pay.js" },
+    { "src": "/dashboard", "dest": "/api/dashboard.js" },
+    { "src": "/api/paymob-payment", "dest": "/api/paymob-payment.js" },
+    { "src": "/api/paymob-webhook", "dest": "/api/paymob-webhook.js" },
+    { "src": "/api/paymob-response", "dest": "/api/paymob-response.js" },
+    { "src": "/api/(.*)", "dest": "/api/$1.js" },
+    { "src": "/(.*)", "dest": "/api/pay.js" }
   ]
 }
