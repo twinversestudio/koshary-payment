@@ -1,15 +1,15 @@
-// ?? ?????? ???? ?????? ??????
+const { MongoClient } = require('mongodb');
 
 module.exports = async (req, res) => {
-    const playerId = req.query.player || 'unknown';
-
-    const html = `
+  const playerId = req.query.player || 'unknown';
+  
+  const html = `
 <!DOCTYPE html>
 <html dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>???? ????? - ???? ??????????</title>
+  <title>شراء عملات - كشري سيميوليتور</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
@@ -124,81 +124,81 @@ module.exports = async (req, res) => {
 <body>
   <div class="container">
     <div class="header">
-      <h1>?? ???? ??????????</h1>
-      <p>???? ?????? ???? ??????</p>
+      <h1>🎮 كشري سيميوليتور</h1>
+      <p>اختر الباقة اللي تناسبك</p>
     </div>
     
     <div class="packages">
       <div class="package" onclick="selectPackage(100, 10, this)">
-        <div class="coins">?? 100 ????</div>
-        <div class="price">10 ???? ????</div>
+        <div class="coins">💰 100 عملة</div>
+        <div class="price">10 جنيه مصري</div>
       </div>
       
       <div class="package" onclick="selectPackage(500, 40, this)">
-        <div class="coins">?? 500 ????</div>
-        <div class="price">40 ???? ????</div>
+        <div class="coins">💰 500 عملة</div>
+        <div class="price">40 جنيه مصري</div>
       </div>
       
       <div class="package" onclick="selectPackage(1000, 70, this)">
-        <div class="coins">?? 1000 ????</div>
-        <div class="price">70 ???? ????</div>
+        <div class="coins">💰 1000 عملة</div>
+        <div class="price">70 جنيه مصري</div>
       </div>
       
       <div class="package" onclick="selectPackage(5000, 300, this)">
-        <div class="coins">?? 5000 ????</div>
-        <div class="price">300 ???? ????</div>
+        <div class="coins">💰 5000 عملة</div>
+        <div class="price">300 جنيه مصري</div>
       </div>
     </div>
     
     <div class="payment-methods" id="paymentMethods">
-      <h3 style="margin-bottom: 15px;">???? ????? ?????:</h3>
+      <h3 style="margin-bottom: 15px;">اختر طريقة الدفع:</h3>
       
       <div class="method" onclick="selectMethod('vodafone')">
-        <span class="method-icon">??</span>
-        <span>??????? ???</span>
+        <span class="method-icon">📱</span>
+        <span>فودافون كاش</span>
       </div>
       
       <div class="method" onclick="selectMethod('instapay')">
-        <span class="method-icon">??</span>
-        <span>????? ???</span>
+        <span class="method-icon">🏦</span>
+        <span>إنستا باي</span>
       </div>
       
       <div class="method" onclick="selectMethod('telda')">
-        <span class="method-icon">??</span>
-        <span>?????</span>
+        <span class="method-icon">💳</span>
+        <span>تيلدا</span>
       </div>
       
       <div class="method" onclick="selectMethod('card')">
-        <span class="method-icon">??</span>
-        <span>????? ????? (????)</span>
+        <span class="method-icon">💳</span>
+        <span>بطاقة بنكية (فوري)</span>
       </div>
     </div>
     
     <div class="instapay-info" id="instapayInfo">
-      <p>? ?? ??????: <span id="selectedAmount">---</span> ????</p>
-      <p>??????: <span id="selectedPrice">---</span> ????</p>
+      <p>✅ تم اختيار: <span id="selectedAmount">---</span> عملة</p>
+      <p>المبلغ: <span id="selectedPrice">---</span> جنيه</p>
       <hr style="margin: 15px 0; opacity: 0.3;">
-      <p>???? ?????? ???:</p>
+      <p>احول المبلغ على:</p>
       <div class="instapay-id">bankmisr.youssef@instapay</div>
       <p style="font-size: 14px; margin-top: 10px;">
-        ?? ???? ????? ????? ????? ?????
+        📋 انسخ الرقم وافتح تطبيق البنك
       </p>
     </div>
     
     <div class="loading" id="loading">
-      ? ???? ?????? ????...
+      ⏳ جاري معالجة طلبك...
     </div>
     
     <div class="success-message" id="successMessage">
-      <h2>? ?? ?????? ????!</h2>
-      <p>???? ????? ??????? ?????? ???? ?????</p>
+      <h2>✅ تم استلام طلبك!</h2>
+      <p>سيتم إضافة العملات لحسابك خلال دقائق</p>
       <p style="margin-top: 15px; font-size: 14px;">
-        ???? ?????? ????? ?????? ??? ????
+        اغلق الصفحة وافتح اللعبة مرة أخرى
       </p>
     </div>
     
     <button class="confirm-btn" id="confirmBtn" onclick="confirmPayment()">
-      ?? ??????? ?
+      تم التحويل ✅
     </button>
   </div>
 
@@ -212,14 +212,10 @@ module.exports = async (req, res) => {
       selectedCoins = coins;
       selectedPrice = price;
       
-      // ??? ??????? ?? ????
       document.querySelectorAll('.package').forEach(p => p.classList.remove('selected'));
       element.classList.add('selected');
       
-      // ???? ??? ?????
       document.getElementById('paymentMethods').classList.add('show');
-      
-      // ???? ???? ????
       document.getElementById('instapayInfo').classList.remove('show');
       document.getElementById('confirmBtn').classList.remove('show');
     }
@@ -227,13 +223,11 @@ module.exports = async (req, res) => {
     function selectMethod(method) {
       selectedMethod = method;
       
-      // ???? ??????? ????? ??? (?? ????? ???? ?????? ???)
       document.getElementById('selectedAmount').textContent = selectedCoins;
       document.getElementById('selectedPrice').textContent = selectedPrice;
       document.getElementById('instapayInfo').classList.add('show');
       document.getElementById('confirmBtn').classList.add('show');
       
-      // ?? ????? ??? ?????? ???? ???????
       if (method === 'instapay') {
         window.location.href = 'https://ipn.instapay.dev/e/bankmisr.youssef@instapay?amount=' + selectedPrice;
       }
@@ -262,7 +256,7 @@ module.exports = async (req, res) => {
           document.getElementById('successMessage').classList.add('show');
         }
       } catch (error) {
-        alert('??? ???? ???? ??? ????');
+        alert('حدث خطأ، حاول مرة أخرى');
         document.getElementById('loading').classList.remove('show');
         document.getElementById('confirmBtn').classList.add('show');
       }
@@ -271,7 +265,7 @@ module.exports = async (req, res) => {
 </body>
 </html>
   `;
-
-    res.setHeader('Content-Type', 'text/html');
-    res.send(html);
+  
+  res.setHeader('Content-Type', 'text/html');
+  res.send(html);
 };
