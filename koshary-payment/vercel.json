@@ -18,6 +18,10 @@
       "dest": "/api/paymob-webhook.js"
     },
     {
+      "src": "/api/paymob-response",
+      "dest": "/api/paymob-response.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/$1.js"
     },
