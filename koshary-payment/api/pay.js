@@ -1,6 +1,5 @@
 module.exports = async (req, res) => {
   const playerId = req.query.player || 'unknown';
-  const integrationId = process.env.PAYMOB_INTEGRATION_ID;
   
   const html = `
 <!DOCTYPE html>
@@ -106,16 +105,6 @@ module.exports = async (req, res) => {
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     
-    .success-message {
-      background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
-      padding: 30px;
-      border-radius: 15px;
-      text-align: center;
-      display: none;
-    }
-    .success-message.show { display: block; }
-    .success-message h2 { margin-bottom: 15px; font-size: 24px; }
-    
     .error-message {
       background: #e74c3c;
       color: white;
@@ -160,9 +149,12 @@ module.exports = async (req, res) => {
     </div>
     
     <div class="payment-section" id="paymentSection">
-      <p style="margin-bottom: 15px; color: #ccc;">سيتم تحويلك لصفحة الدفع الآمنة</p>
+      <p style="margin-bottom: 15px; color: #ccc;">
+        سيتم تحويلك لصفحة الدفع الآمنة<br>
+        <small>(فودافون كاش، أورانج، اتصالات، بطاقة)</small>
+      </p>
       <button class="pay-btn" id="payBtn" onclick="startPayment()">
-        💳 ادفع الآن
+        💳 ادفع الآن مع Paymob
       </button>
     </div>
     
@@ -172,19 +164,10 @@ module.exports = async (req, res) => {
     </div>
     
     <div class="error-message" id="errorMessage"></div>
-    
-    <div class="success-message" id="successMessage">
-      <h2>✅ تم استلام طلبك!</h2>
-      <p>سيتم إضافة العملات لحسابك خلال دقائق</p>
-      <p style="margin-top: 15px; font-size: 13px; opacity: 0.9;">
-        اغلق الصفحة وافتح اللعبة مرة أخرى
-      </p>
-    </div>
   </div>
 
   <script>
     const playerId = '${playerId}';
-    const integrationId = '${integrationId}';
     let selectedCoins = 0;
     let selectedPrice = 0;
     
@@ -226,9 +209,8 @@ module.exports = async (req, res) => {
           throw new Error(data.error || 'حدث خطأ');
         }
         
-        // التحويل لصفحة Paymob
-        const paymobUrl = 'https://accept.paymob.com/api/acceptance/iframes/' + integrationId + '?payment_token=' + data.paymentToken;
-        window.location.href = paymobUrl;
+        // ✅ التحويل لصفحة Paymob مباشرة
+        window.location.href = 'https://accept.paymob.com/api/acceptance/iframes/' + data.integrationId + '?payment_token=' + data.paymentToken;
         
       } catch (error) {
         console.error('Error:', error);
