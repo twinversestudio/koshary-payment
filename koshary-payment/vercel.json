@@ -1,33 +1,12 @@
 {
   "version": 2,
   "routes": [
-    {
-      "src": "/pay",
-      "dest": "/api/pay.js"
-    },
-    {
-      "src": "/api/create-order",
-      "dest": "/api/create-order.js"
-    },
-    {
-      "src": "/api/check",
-      "dest": "/api/check.js"
-    },
-    {
-      "src": "/api/confirm",
-      "dest": "/api/confirm.js"
-    },
-    {
-      "src": "/api/orders",
-      "dest": "/api/orders.js"
-    },
-    {
-      "src": "/dashboard",
-      "dest": "/public/dashboard.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/pay.js"
-    }
+    { "src": "/pay", "dest": "/koshary-payment/api/pay.js" },
+    { "src": "/api/create-order", "dest": "/koshary-payment/api/create-order.js" },
+    { "src": "/api/check", "dest": "/koshary-payment/api/check.js" },
+    { "src": "/api/confirm", "dest": "/koshary-payment/api/confirm.js" },
+    { "src": "/api/orders", "dest": "/koshary-payment/api/orders.js" },
+    { "src": "/dashboard", "dest": "/koshary-payment/public/dashboard.html" },
+    { "src": "/(.*)", "dest": "/koshary-payment/api/pay.js" }
   ]
 }
