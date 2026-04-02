@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
         const orders = db.collection('orders');
 
         const paidOrders = await orders.find({
-        playerId: String(playerId)
+        playerId: playerId
         status: 'paid'
         }).toArray();
 
