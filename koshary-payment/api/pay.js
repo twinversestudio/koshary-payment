@@ -18,17 +18,31 @@ module.exports = async (req, res) => {
       padding: 20px;
     }
     .container { max-width: 400px; margin: 0 auto; }
-    .header { text-align: center; padding: 30px 0; }
-    .header h1 { font-size: 28px; color: #ffd700; margin-bottom: 10px; }
-    .header p { color: #aaa; }
+    
+    .logo {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+    
+    .header { text-align: center; padding: 20px 0; }
+    .header h1 { font-size: 24px; color: #ffd700; margin-bottom: 10px; }
+    .header p { color: #aaa; font-size: 14px; }
     
     .packages { margin: 20px 0; }
     .package { 
       background: rgba(255,255,255,0.1); 
       border: 2px solid transparent;
       border-radius: 15px; 
-      padding: 20px; 
-      margin: 15px 0;
+      padding: 15px; 
+      margin: 10px 0;
       cursor: pointer;
       transition: all 0.3s;
     }
@@ -37,92 +51,113 @@ module.exports = async (req, res) => {
       background: rgba(255,215,0,0.1);
     }
     .package .coins { 
-      font-size: 24px; 
+      font-size: 22px; 
       font-weight: bold; 
       color: #ffd700;
     }
     .package .price { 
-      font-size: 18px; 
+      font-size: 16px; 
       color: #4CAF50;
       margin-top: 5px;
     }
     
-    .payment-methods { 
+    .payment-section {
       display: none;
       margin-top: 20px;
     }
-    .payment-methods.show { display: block; }
+    .payment-section.show { display: block; }
     
-    .method { 
-      background: rgba(255,255,255,0.05);
-      border-radius: 10px;
-      padding: 15px;
-      margin: 10px 0;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 15px;
+    .payment-methods {
+      margin-top: 20px;
     }
-    .method:hover { background: rgba(255,255,255,0.1); }
-    .method-icon { font-size: 24px; }
+    .payment-methods h3 {
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: #ccc;
+    }
     
-    .instapay-info {
-      background: #4CAF50;
+    .pay-btn {
+      background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
       color: white;
-      padding: 20px;
-      border-radius: 10px;
-      margin: 20px 0;
-      text-align: center;
-      display: none;
-    }
-    .instapay-info.show { display: block; }
-    .instapay-id {
-      font-size: 20px;
-      font-weight: bold;
-      background: rgba(0,0,0,0.2);
-      padding: 10px;
-      border-radius: 5px;
-      margin: 10px 0;
-      user-select: all;
-    }
-    
-    .confirm-btn {
-      background: #ffd700;
-      color: #1a1a2e;
       border: none;
-      padding: 15px 30px;
+      padding: 18px;
       font-size: 18px;
       font-weight: bold;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       width: 100%;
       margin-top: 20px;
+      transition: transform 0.2s;
+    }
+    .pay-btn:hover { transform: scale(1.02); }
+    .pay-btn:disabled {
+      background: #555;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 30px;
       display: none;
     }
-    .confirm-btn.show { display: block; }
-    .confirm-btn:hover { background: #ffed4e; }
+    .loading.show { display: block; }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: #ffd700;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
     
     .success-message {
-      background: #4CAF50;
-      padding: 20px;
-      border-radius: 10px;
+      background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+      padding: 30px;
+      border-radius: 15px;
       text-align: center;
       display: none;
     }
     .success-message.show { display: block; }
+    .success-message h2 { margin-bottom: 15px; font-size: 24px; }
     
-    .loading {
-      text-align: center;
-      padding: 20px;
-      display: none;
+    .payment-icons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
     }
-    .loading.show { display: block; }
+    .payment-icon {
+      background: rgba(255,255,255,0.1);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .error-message {
+      background: #e74c3c;
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      display: none;
+      text-align: center;
+    }
+    .error-message.show { display: block; }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="logo">🎮</div>
+    
     <div class="header">
-      <h1>🎮 كشري سيميوليتور</h1>
+      <h1>كشري سيميوليتور</h1>
       <p>اختر الباقة اللي تناسبك</p>
     </div>
     
@@ -148,63 +183,46 @@ module.exports = async (req, res) => {
       </div>
     </div>
     
-    <div class="payment-methods" id="paymentMethods">
-      <h3 style="margin-bottom: 15px;">اختر طريقة الدفع:</h3>
-      
-      <div class="method" onclick="selectMethod('vodafone')">
-        <span class="method-icon">📱</span>
-        <span>فودافون كاش</span>
+    <div class="payment-section" id="paymentSection">
+      <div class="payment-methods">
+        <h3>طرق الدفع المتاحة:</h3>
+        <div class="payment-icons">
+          <div class="payment-icon">💳 بطاقة بنكية</div>
+          <div class="payment-icon">📱 فودافون كاش</div>
+          <div class="payment-icon">🏦 إنستا باي</div>
+          <div class="payment-icon">💳 تيلدا</div>
+          <div class="payment-icon">🏧 الدفع بالكود</div>
+        </div>
       </div>
       
-      <div class="method" onclick="selectMethod('instapay')">
-        <span class="method-icon">🏦</span>
-        <span>إنستا باي</span>
-      </div>
-      
-      <div class="method" onclick="selectMethod('telda')">
-        <span class="method-icon">💳</span>
-        <span>تيلدا</span>
-      </div>
-      
-      <div class="method" onclick="selectMethod('card')">
-        <span class="method-icon">💳</span>
-        <span>بطاقة بنكية (فوري)</span>
-      </div>
-    </div>
-    
-    <div class="instapay-info" id="instapayInfo">
-      <p>✅ تم اختيار: <span id="selectedAmount">---</span> عملة</p>
-      <p>المبلغ: <span id="selectedPrice">---</span> جنيه</p>
-      <hr style="margin: 15px 0; opacity: 0.3;">
-      <p>احول المبلغ على:</p>
-      <div class="instapay-id">bankmisr.youssef@instapay</div>
-      <p style="font-size: 14px; margin-top: 10px;">
-        📋 انسخ الرقم وافتح تطبيق البنك
-      </p>
+      <button class="pay-btn" id="payBtn" onclick="startPayment()">
+        💳 ادفع الآن
+      </button>
     </div>
     
     <div class="loading" id="loading">
-      ⏳ جاري معالجة طلبك...
+      <div class="spinner"></div>
+      <p>جاري تحميل الدفع...</p>
     </div>
     
+    <div class="error-message" id="errorMessage"></div>
+    
     <div class="success-message" id="successMessage">
-      <h2>✅ تم استلام طلبك!</h2>
+      <h2>✅ تم الدفع بنجاح!</h2>
       <p>سيتم إضافة العملات لحسابك خلال دقائق</p>
-      <p style="margin-top: 15px; font-size: 14px;">
+      <p style="margin-top: 15px; font-size: 13px; opacity: 0.9;">
         اغلق الصفحة وافتح اللعبة مرة أخرى
       </p>
     </div>
-    
-    <button class="confirm-btn" id="confirmBtn" onclick="confirmPayment()">
-      تم التحويل ✅
-    </button>
   </div>
 
+  <script src="https://accept.paymob.com/sdk/v1/key.js"></script>
   <script>
     const playerId = '${playerId}';
     let selectedCoins = 0;
     let selectedPrice = 0;
-    let selectedMethod = '';
+    let paymentToken = null;
+    let orderId = null;
     
     function selectPackage(coins, price, element) {
       selectedCoins = coins;
@@ -213,51 +231,88 @@ module.exports = async (req, res) => {
       document.querySelectorAll('.package').forEach(p => p.classList.remove('selected'));
       element.classList.add('selected');
       
-      document.getElementById('paymentMethods').classList.add('show');
-      document.getElementById('instapayInfo').classList.remove('show');
-      document.getElementById('confirmBtn').classList.remove('show');
+      document.getElementById('paymentSection').classList.add('show');
+      document.getElementById('payBtn').disabled = false;
     }
     
-    function selectMethod(method) {
-      selectedMethod = method;
-      
-      document.getElementById('selectedAmount').textContent = selectedCoins;
-      document.getElementById('selectedPrice').textContent = selectedPrice;
-      document.getElementById('instapayInfo').classList.add('show');
-      document.getElementById('confirmBtn').classList.add('show');
-      
-      if (method === 'instapay') {
-        window.location.href = 'https://ipn.instapay.dev/e/bankmisr.youssef@instapay?amount=' + selectedPrice;
+    async function startPayment() {
+      if (selectedPrice === 0) {
+        showError('اختر باقة أولاً');
+        return;
       }
-    }
-    
-    async function confirmPayment() {
-      document.getElementById('confirmBtn').classList.remove('show');
+      
+      document.getElementById('payBtn').disabled = true;
       document.getElementById('loading').classList.add('show');
+      hideError();
       
       try {
-        const response = await fetch('/api/create-order', {
+        const response = await fetch('/api/paymob-payment', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             playerId: playerId,
             amount: selectedCoins,
-            price: selectedPrice,
-            method: selectedMethod
+            price: selectedPrice
           })
         });
         
         const data = await response.json();
         
-        if (data.success) {
-          document.getElementById('loading').classList.remove('show');
-          document.getElementById('successMessage').classList.add('show');
+        if (!data.success) {
+          throw new Error(data.error || 'حدث خطأ');
         }
-      } catch (error) {
-        alert('حدث خطأ، حاول مرة أخرى');
+        
+        paymentToken = data.paymentToken;
+        orderId = data.orderId;
+        const publicKey = data.publicKey;
+        
         document.getElementById('loading').classList.remove('show');
-        document.getElementById('confirmBtn').classList.add('show');
+        
+        const paymob = new Paymob(publicKey);
+        
+        paymob.checkout({
+          paymentToken: paymentToken,
+          appearance: {
+            mode: "overlay",
+            theme: "dark",
+            backgroundColor: "#1a1a2e"
+          }
+        }).then((confirmation) => {
+          if (confirmation.success) {
+            showSuccess();
+          } else if (confirmation.pending) {
+            showSuccess();
+          } else {
+            showError('تم إلغاء الدفع');
+            document.getElementById('payBtn').disabled = false;
+          }
+        }).catch((error) => {
+          console.error('Paymob error:', error);
+          showError('حدث خطأ في الدفع: ' + (error.message || 'حاول مرة أخرى'));
+          document.getElementById('payBtn').disabled = false;
+        });
+        
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('loading').classList.remove('show');
+        showError(error.message || 'حدث خطأ. حاول مرة أخرى');
+        document.getElementById('payBtn').disabled = false;
       }
+    }
+    
+    function showError(msg) {
+      const el = document.getElementById('errorMessage');
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+    
+    function hideError() {
+      document.getElementById('errorMessage').classList.remove('show');
+    }
+    
+    function showSuccess() {
+      document.getElementById('paymentSection').classList.remove('show');
+      document.getElementById('successMessage').classList.add('show');
     }
   </script>
 </body>

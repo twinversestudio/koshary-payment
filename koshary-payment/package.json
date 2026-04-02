@@ -1,7 +1,9 @@
 {
-  "name": "koshary-payment",
+  "name": "koshary-pay",
   "version": "1.0.0",
   "dependencies": {
-    "mongodb": "^5.0.0"
+    "mongodb": "^5.0.0",
+    "node-fetch": "^2.7.0",
+    "axios": "^1.6.0"
   }
 }
