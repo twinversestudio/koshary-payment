@@ -1,8 +1,11 @@
 const { MongoClient } = require('mongodb');
+const crypto = require('crypto');
 const fetch = require('node-fetch');
 
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
+
+const PAYMOB_HMAC = process.env.PAYMOB_HMAC;
 
 const BOT_TOKEN = '8625080293:AAGVKgZyQcRrcBVPixLrJvjzOCMJf-m3L9Q';
 const CHAT_ID = '8119274475';
@@ -23,9 +26,26 @@ async function sendTelegram(message) {
     }
 }
 
+function verifySignature(rawBody, signature) {
+    if (!PAYMOB_HMAC) return true;
+    
+    const hmac = crypto.createHmac('sha512', PAYMOB_HMAC);
+    const expectedSignature = hmac.update(rawBody).digest('hex');
+    
+    return signature === expectedSignature;
+}
+
 module.exports = async (req, res) => {
     if (req.method !== 'POST') {
         return res.status(405).send('Method not allowed');
+    }
+
+    const signature = req.headers['paymob-signature'];
+    const rawBody = JSON.stringify(req.body);
+    
+    if (!verifySignature(rawBody, signature)) {
+        console.log('Invalid webhook signature');
+        return res.status(401).send('Unauthorized');
     }
 
     const data = req.body;

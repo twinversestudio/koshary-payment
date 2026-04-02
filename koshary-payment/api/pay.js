@@ -1,5 +1,6 @@
 module.exports = async (req, res) => {
   const playerId = req.query.player || 'unknown';
+  const integrationId = process.env.PAYMOB_INTEGRATION_ID;
   
   const html = `
 <!DOCTYPE html>
@@ -64,17 +65,9 @@ module.exports = async (req, res) => {
     .payment-section {
       display: none;
       margin-top: 20px;
+      text-align: center;
     }
     .payment-section.show { display: block; }
-    
-    .payment-methods {
-      margin-top: 20px;
-    }
-    .payment-methods h3 {
-      margin-bottom: 15px;
-      font-size: 16px;
-      color: #ccc;
-    }
     
     .pay-btn {
       background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
@@ -123,23 +116,6 @@ module.exports = async (req, res) => {
     .success-message.show { display: block; }
     .success-message h2 { margin-bottom: 15px; font-size: 24px; }
     
-    .payment-icons {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 15px;
-      flex-wrap: wrap;
-    }
-    .payment-icon {
-      background: rgba(255,255,255,0.1);
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    
     .error-message {
       background: #e74c3c;
       color: white;
@@ -184,17 +160,7 @@ module.exports = async (req, res) => {
     </div>
     
     <div class="payment-section" id="paymentSection">
-      <div class="payment-methods">
-        <h3>طرق الدفع المتاحة:</h3>
-        <div class="payment-icons">
-          <div class="payment-icon">💳 بطاقة بنكية</div>
-          <div class="payment-icon">📱 فودافون كاش</div>
-          <div class="payment-icon">🏦 إنستا باي</div>
-          <div class="payment-icon">💳 تيلدا</div>
-          <div class="payment-icon">🏧 الدفع بالكود</div>
-        </div>
-      </div>
-      
+      <p style="margin-bottom: 15px; color: #ccc;">سيتم تحويلك لصفحة الدفع الآمنة</p>
       <button class="pay-btn" id="payBtn" onclick="startPayment()">
         💳 ادفع الآن
       </button>
@@ -202,13 +168,13 @@ module.exports = async (req, res) => {
     
     <div class="loading" id="loading">
       <div class="spinner"></div>
-      <p>جاري تحميل الدفع...</p>
+      <p>جاري تحضير الدفع...</p>
     </div>
     
     <div class="error-message" id="errorMessage"></div>
     
     <div class="success-message" id="successMessage">
-      <h2>✅ تم الدفع بنجاح!</h2>
+      <h2>✅ تم استلام طلبك!</h2>
       <p>سيتم إضافة العملات لحسابك خلال دقائق</p>
       <p style="margin-top: 15px; font-size: 13px; opacity: 0.9;">
         اغلق الصفحة وافتح اللعبة مرة أخرى
@@ -216,13 +182,11 @@ module.exports = async (req, res) => {
     </div>
   </div>
 
-  <script src="https://accept.paymob.com/sdk/v1/key.js"></script>
   <script>
     const playerId = '${playerId}';
+    const integrationId = '${integrationId}';
     let selectedCoins = 0;
     let selectedPrice = 0;
-    let paymentToken = null;
-    let orderId = null;
     
     function selectPackage(coins, price, element) {
       selectedCoins = coins;
@@ -262,35 +226,9 @@ module.exports = async (req, res) => {
           throw new Error(data.error || 'حدث خطأ');
         }
         
-        paymentToken = data.paymentToken;
-        orderId = data.orderId;
-        const publicKey = data.publicKey;
-        
-        document.getElementById('loading').classList.remove('show');
-        
-        const paymob = new Paymob(publicKey);
-        
-        paymob.checkout({
-          paymentToken: paymentToken,
-          appearance: {
-            mode: "overlay",
-            theme: "dark",
-            backgroundColor: "#1a1a2e"
-          }
-        }).then((confirmation) => {
-          if (confirmation.success) {
-            showSuccess();
-          } else if (confirmation.pending) {
-            showSuccess();
-          } else {
-            showError('تم إلغاء الدفع');
-            document.getElementById('payBtn').disabled = false;
-          }
-        }).catch((error) => {
-          console.error('Paymob error:', error);
-          showError('حدث خطأ في الدفع: ' + (error.message || 'حاول مرة أخرى'));
-          document.getElementById('payBtn').disabled = false;
-        });
+        // التحويل لصفحة Paymob
+        const paymobUrl = 'https://accept.paymob.com/api/acceptance/iframes/' + integrationId + '?payment_token=' + data.paymentToken;
+        window.location.href = paymobUrl;
         
       } catch (error) {
         console.error('Error:', error);
@@ -308,11 +246,6 @@ module.exports = async (req, res) => {
     
     function hideError() {
       document.getElementById('errorMessage').classList.remove('show');
-    }
-    
-    function showSuccess() {
-      document.getElementById('paymentSection').classList.remove('show');
-      document.getElementById('successMessage').classList.add('show');
     }
   </script>
 </body>
