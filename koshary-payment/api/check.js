@@ -22,6 +22,20 @@ module.exports = async (req, res) => {
 
         const totalCoins = paidOrders.reduce((sum, order) => sum + order.amount, 0);
 
+    if (paidOrders.length > 0) {
+      await orders.updateMany(
+    {
+      playerId: playerId,
+      status: 'paid',
+      claimed: false
+    },
+    {
+      $set: { claimed: true }
+    }
+      );
+    }
+
+
         res.json({
             success: true,
             totalCoins: totalCoins,
