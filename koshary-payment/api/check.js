@@ -14,27 +14,29 @@ module.exports = async (req, res) => {
         const db = client.db('kosharygame');
         const orders = db.collection('orders');
 
+        const cleanId = String(playerId).trim();
+
         const paidOrders = await orders.find({
-        playerId: String(playerId)
-        status: 'paid'
-        claimed: false
+            playerId: cleanId,
+            status: 'paid',
+            claimed: false
         }).toArray();
 
         const totalCoins = paidOrders.reduce((sum, order) => sum + order.amount, 0);
 
-    if (paidOrders.length > 0) {
-      await orders.updateMany(
-    {
-      playerId: playerId,
-      status: 'paid',
-      claimed: false
-    },
-    {
-      $set: { claimed: true }
-    }
-      );
-    }
-
+        // 🔥 علمهم إنهم اتاخدوا
+        if (paidOrders.length > 0) {
+            await orders.updateMany(
+                {
+                    playerId: cleanId,
+                    status: 'paid',
+                    claimed: false
+                },
+                {
+                    $set: { claimed: true }
+                }
+            );
+        }
 
         res.json({
             success: true,
