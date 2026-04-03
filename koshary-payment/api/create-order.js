@@ -52,6 +52,7 @@ module.exports = async (req, res) => {
             price: parseInt(price),
             method,
             status: 'pending',
+            claimed: false
             createdAt: new Date()
         });
 
